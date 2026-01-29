@@ -5,12 +5,14 @@ import { Play, MoreVertical, Search, Filter, Calendar, User, Film, MonitorPlay, 
 
 interface HomeGridProps {
   videos: Video[];
+  onSelectVideo?: (video: Video) => void;
+  onSelectAuthor?: (authorName: string) => void;
 }
 
 type DateFilter = 'all' | 'today' | 'week' | 'month';
 type FormatFilter = 'all' | 'landscape' | 'short';
 
-export const HomeGrid: React.FC<HomeGridProps> = ({ videos }) => {
+export const HomeGrid: React.FC<HomeGridProps> = ({ videos, onSelectVideo, onSelectAuthor }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [authorFilter, setAuthorFilter] = useState('all');
   const [dateFilter, setDateFilter] = useState<DateFilter>('all');
@@ -141,6 +143,7 @@ export const HomeGrid: React.FC<HomeGridProps> = ({ videos }) => {
               className="group cursor-pointer"
               onMouseEnter={() => setHoveringId(video.id)}
               onMouseLeave={() => setHoveringId(null)}
+              onClick={() => onSelectVideo?.(video)}
             >
               <div className="relative aspect-video bg-dark-800 rounded-xl overflow-hidden mb-3">
                 {video.thumbnailUrl && hoveringId !== video.id ? (
@@ -156,36 +159,44 @@ export const HomeGrid: React.FC<HomeGridProps> = ({ videos }) => {
                     muted
                     loop
                     autoPlay={hoveringId === video.id}
+                    playsInline
                   />
                 )}
                 
                 <div className="absolute bottom-2 right-2 bg-black/80 text-xs px-1.5 py-0.5 rounded text-white font-medium">
                   {video.format === VideoFormat.Short ? 'SHORTS' : '00:06'}
                 </div>
-                {video.format === VideoFormat.Short && (
-                  <div className="absolute top-2 left-2 bg-brand-600 text-[10px] px-1.5 py-0.5 rounded text-white font-bold flex items-center gap-1 shadow-lg">
-                    <Film size={10} />
-                    SHORT
-                  </div>
-                )}
               </div>
               
               <div className="flex gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-500 to-indigo-500 flex-shrink-0 flex items-center justify-center text-sm font-bold shadow-inner">
-                  {video.author[0]}
+                <div 
+                  className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-500 to-indigo-500 flex-shrink-0 flex items-center justify-center text-sm font-bold shadow-inner cursor-pointer"
+                  onClick={(e) => { e.stopPropagation(); onSelectAuthor?.(video.author); }}
+                >
+                  {video.authorAvatar ? (
+                    <img src={video.authorAvatar} className="w-full h-full rounded-full object-cover" alt={video.author} />
+                  ) : video.author[0]}
                 </div>
                 <div className="flex-1">
                   <h3 className="font-semibold text-white line-clamp-2 leading-tight mb-1 group-hover:text-brand-500 transition-colors">
                     {video.prompt}
                   </h3>
                   <div className="text-sm text-gray-400">
-                    <p className="hover:text-white transition-colors">{video.author}</p>
+                    <p 
+                      className="hover:text-white transition-colors cursor-pointer inline-block"
+                      onClick={(e) => { e.stopPropagation(); onSelectAuthor?.(video.author); }}
+                    >
+                      {video.author}
+                    </p>
                     <p className="text-xs mt-0.5">
                       {video.views} visualizações • {new Date(video.createdAt).toLocaleDateString('pt-BR')}
                     </p>
                   </div>
                 </div>
-                <button className="text-gray-400 hover:text-white h-fit p-1 rounded-full hover:bg-dark-800 transition-colors">
+                <button 
+                  className="text-gray-400 hover:text-white h-fit p-1 rounded-full hover:bg-dark-800 transition-colors"
+                  onClick={(e) => { e.stopPropagation(); }}
+                >
                   <MoreVertical size={18} />
                 </button>
               </div>

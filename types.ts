@@ -28,7 +28,7 @@ export interface AffiliateLink {
 export interface Video {
   id: string;
   url: string;
-  thumbnailUrl?: string; // Novo campo para a capa do vídeo
+  thumbnailUrl?: string;
   prompt: string;
   description?: string;
   affiliateLink?: AffiliateLink;
@@ -43,4 +43,4 @@ export interface Video {
   isLocal?: boolean;
 }
 
-export type Tab = 'home' | 'shorts' | 'videos' | 'live' | 'tv' | 'library' | 'channel' | 'my_videos' | 'upload';
+export type Tab = 'home' | 'shorts' | 'videos' | 'live' | 'tv' | 'library' | 'channel' | 'my_videos' | 'upload' | 'courses' | 'podcasts' | 'explore' | 'view_channel';

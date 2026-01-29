@@ -1,5 +1,6 @@
+
 import React from 'react';
-import { Home, Film, Library, PlusSquare, MonitorPlay, Radio, User as UserIcon, LogOut, Clapperboard, Youtube, Tv, PlusSquare as PlusIcon } from './Icons';
+import { Home, Compass, Film, MonitorPlay, GraduationCap, Mic, Radio, Clapperboard, Youtube, Tv, LogOut, User as UserIcon, PlusSquare } from './Icons';
 import { Tab, User } from '../types';
 
 interface SidebarProps {
@@ -23,33 +24,28 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const navItems = [
     { id: 'home', label: 'Início', icon: Home },
+    { id: 'explore', label: 'Explorar', icon: Compass },
     { id: 'shorts', label: 'Shorts', icon: Film },
-    { id: 'videos', label: 'Vídeos', icon: MonitorPlay },
-    { id: 'upload', label: 'Upload', icon: PlusIcon },
-    { id: 'tv', label: 'TV', icon: Tv },
+    { id: 'courses', label: 'Cursos', icon: GraduationCap },
+    { id: 'podcasts', label: 'Podcasts', icon: Mic },
     { id: 'live', label: 'Ao Vivo', icon: Radio },
   ];
 
   if (isMobile) {
     return (
       <div className="fixed bottom-0 left-0 right-0 bg-dark-900 border-t border-dark-700 py-2 px-1 flex justify-around items-center z-50">
-        {navItems.map((item) => {
-          const isPlus = item.id === 'upload';
-          return (
-            <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id as Tab)}
-              className={`flex flex-col items-center gap-1 transition-all ${
-                isPlus 
-                  ? 'bg-brand-600 p-3 rounded-2xl -mt-8 shadow-lg shadow-brand-900/40 text-white' 
-                  : activeTab === item.id ? 'text-brand-500' : 'text-gray-400'
-              }`}
-            >
-              <item.icon size={isPlus ? 28 : 22} />
-              {!isPlus && <span className="text-[9px] font-medium">{item.label}</span>}
-            </button>
-          );
-        })}
+        {navItems.map((item) => (
+          <button
+            key={item.id}
+            onClick={() => setActiveTab(item.id as Tab)}
+            className={`flex flex-col items-center gap-1 transition-all ${
+              activeTab === item.id ? 'text-brand-500' : 'text-gray-400'
+            }`}
+          >
+            <item.icon size={22} />
+            <span className="text-[9px] font-medium">{item.label}</span>
+          </button>
+        ))}
       </div>
     );
   }
@@ -65,7 +61,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </div>
 
-      <nav className="flex-1 px-4 space-y-2 overflow-y-auto custom-sidebar-scroll pb-4">
+      <nav className="flex-1 px-4 space-y-1 overflow-y-auto custom-sidebar-scroll pb-4">
         {navItems.map((item) => (
           <button
             key={item.id}
@@ -126,7 +122,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             className="w-full flex items-center justify-center gap-2 bg-brand-600 hover:bg-brand-700 text-white py-3 rounded-xl font-semibold transition-all shadow-lg shadow-brand-900/20"
          >
             <PlusSquare size={20} />
-            <span>Criar Vídeo</span>
+            <span>Publicar Vídeo</span>
          </button>
 
          {currentUser && (

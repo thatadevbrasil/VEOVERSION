@@ -31,8 +31,18 @@ import {
   Cast,
   Filter,
   Calendar,
-  // Added CheckCircle icon
-  CheckCircle
+  CheckCircle,
+  GraduationCap,
+  Mic,
+  Clock,
+  ExternalLink,
+  Volume2,
+  Compass,
+  Flame,
+  Music,
+  Gamepad2,
+  Newspaper,
+  Trophy
 } from 'lucide-react';
 
 export { 
@@ -66,6 +76,16 @@ export {
   Cast, 
   Filter, 
   Calendar,
-  // Added CheckCircle to exports
-  CheckCircle
+  CheckCircle,
+  GraduationCap,
+  Mic,
+  Clock,
+  ExternalLink,
+  Volume2,
+  Compass,
+  Flame,
+  Music,
+  Gamepad2,
+  Newspaper,
+  Trophy
 };

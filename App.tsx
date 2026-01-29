@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { ShortsFeed } from './components/ShortsFeed';
@@ -9,6 +10,10 @@ import { CreateModal } from './components/CreateModal';
 import { AuthModal } from './components/AuthModal';
 import { UploadView } from './components/UploadView';
 import { ChannelProfile } from './components/ChannelProfile';
+import { VideoPlayer } from './components/VideoPlayer';
+import { CoursesView } from './components/CoursesView';
+import { PodcastView } from './components/PodcastView';
+import { ExploreView } from './components/ExploreView';
 import { Video, Tab, VideoFormat, GenerationStatus, User, AffiliateLink } from './types';
 import { Youtube, User as UserIcon } from './components/Icons';
 
@@ -24,7 +29,8 @@ const INITIAL_VIDEOS: Video[] = [
     createdAt: Date.now(),
     likes: 1205,
     views: '12K',
-    author: 'TravelBot'
+    author: 'TravelBot',
+    authorId: 'bot1'
   },
   {
     id: '2',
@@ -41,7 +47,8 @@ const INITIAL_VIDEOS: Video[] = [
     createdAt: Date.now() - 100000,
     likes: 850,
     views: '8.5K',
-    author: 'ActionAI'
+    author: 'ActionAI',
+    authorId: 'bot2'
   },
   {
     id: '4',
@@ -53,13 +60,16 @@ const INITIAL_VIDEOS: Video[] = [
     createdAt: Date.now() - 50000,
     likes: 5600,
     views: '100K',
-    author: 'DreamGen'
+    author: 'DreamGen',
+    authorId: 'bot3'
   }
 ];
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('home');
   const [videos, setVideos] = useState<Video[]>(INITIAL_VIDEOS);
+  const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
+  const [viewedChannelName, setViewedChannelName] = useState<string | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -81,6 +91,15 @@ export default function App() {
   const handleLogout = () => {
     setCurrentUser(null);
     setActiveTab('home');
+  };
+
+  const handleSelectAuthor = (authorName: string) => {
+    if (currentUser && authorName === currentUser.name) {
+      setActiveTab('channel');
+    } else {
+      setViewedChannelName(authorName);
+      setActiveTab('view_channel');
+    }
   };
 
   const handleVideoCreated = (url: string, prompt: string, format: VideoFormat, description: string, affiliateLink?: AffiliateLink, thumbnailUrl?: string) => {
@@ -112,31 +131,62 @@ export default function App() {
 
   const renderContent = () => {
     switch (activeTab) {
+      case 'home':
+        return <HomeGrid videos={videos} onSelectVideo={setSelectedVideo} onSelectAuthor={handleSelectAuthor} />;
+      case 'explore':
+        return <ExploreView videos={videos} onSelectVideo={setSelectedVideo} onSelectAuthor={handleSelectAuthor} />;
       case 'shorts':
         return <ShortsFeed videos={videos} />;
       case 'videos':
-        return <HomeGrid videos={videos.filter(v => v.format === VideoFormat.Landscape)} />;
-      case 'upload':
-        return <UploadView onCancel={() => setActiveTab('home')} onUploadSuccess={handleVideoCreated} />;
-      case 'tv':
-        return <TVMode videos={videos} />;
+        return <HomeGrid videos={videos.filter(v => v.format === VideoFormat.Landscape)} onSelectVideo={setSelectedVideo} onSelectAuthor={handleSelectAuthor} />;
       case 'live':
-        return <LiveGrid videos={videos} onOpenCreate={() => setIsCreateModalOpen(true)} />;
-      case 'home':
-      case 'library':
-      case 'my_videos':
+        return <LiveGrid videos={videos} onOpenCreate={() => setIsCreateModalOpen(true)} onSelectVideo={setSelectedVideo} />;
+      case 'courses':
+        return <CoursesView />;
+      case 'podcasts':
+        return <PodcastView />;
       case 'channel':
-        if ((activeTab === 'channel' || activeTab === 'my_videos') && !currentUser) {
-            setTimeout(() => setIsAuthModalOpen(true), 0);
-            setActiveTab('home');
-            return <HomeGrid videos={videos} />;
+        if (!currentUser) {
+          setTimeout(() => setIsAuthModalOpen(true), 0);
+          setActiveTab('home');
+          return null;
         }
-        if (currentUser && activeTab === 'channel') {
-           return <ChannelProfile user={currentUser} videos={videos} onUpdateUser={setCurrentUser} onOpenCreate={() => setIsCreateModalOpen(true)} />;
+        return (
+          <ChannelProfile 
+            user={currentUser} 
+            videos={videos} 
+            onUpdateUser={setCurrentUser} 
+            onOpenCreate={() => setIsCreateModalOpen(true)} 
+            onSelectVideo={setSelectedVideo} 
+            isOwnChannel={true}
+            onSelectAuthor={handleSelectAuthor}
+          />
+        );
+      case 'view_channel':
+        const mockUser = { 
+          name: viewedChannelName || 'Criador', 
+          subscribers: '12K', 
+          banner: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop' 
+        };
+        return (
+          <ChannelProfile 
+            user={mockUser} 
+            videos={videos} 
+            onOpenCreate={() => setIsCreateModalOpen(true)} 
+            onSelectVideo={setSelectedVideo} 
+            isOwnChannel={false}
+            onSelectAuthor={handleSelectAuthor}
+          />
+        );
+      case 'my_videos':
+        if (!currentUser) {
+          setTimeout(() => setIsAuthModalOpen(true), 0);
+          setActiveTab('home');
+          return null;
         }
-        return <HomeGrid videos={videos} />;
+        return <HomeGrid videos={videos.filter(v => v.authorId === currentUser.id)} onSelectVideo={setSelectedVideo} onSelectAuthor={handleSelectAuthor} />;
       default:
-        return <HomeGrid videos={videos} />;
+        return <HomeGrid videos={videos} onSelectVideo={setSelectedVideo} onSelectAuthor={handleSelectAuthor} />;
     }
   };
 
@@ -144,7 +194,6 @@ export default function App() {
     return <SplashScreen onFinish={() => setLoading(false)} />;
   }
 
-  // Importante: Remover padding inferior para Shorts para o snap scroll funcionar
   const isShortsActive = activeTab === 'shorts';
 
   return (
@@ -159,9 +208,9 @@ export default function App() {
         onLogout={handleLogout}
       />
 
-      {isMobile && !isShortsActive && activeTab !== 'upload' && (
+      {isMobile && !isShortsActive && (
         <div className="fixed top-0 left-0 right-0 h-16 bg-dark-900/80 backdrop-blur-md z-40 flex items-center justify-between px-4 border-b border-dark-700">
-           <div className="flex items-center gap-2">
+           <div className="flex items-center gap-2" onClick={() => setActiveTab('home')}>
              <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center font-bold text-white">
                 <Youtube className="text-white fill-white" size={20} />
              </div>
@@ -194,6 +243,13 @@ export default function App() {
         onClose={() => setIsAuthModalOpen(false)}
         onLogin={handleLogin}
       />
+
+      {selectedVideo && (
+        <VideoPlayer 
+          video={selectedVideo} 
+          onClose={() => setSelectedVideo(null)} 
+        />
+      )}
     </div>
   );
 }

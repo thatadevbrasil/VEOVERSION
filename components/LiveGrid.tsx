@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Video } from '../types';
 import { MoreVertical, Radio, Cast, Camera, MonitorPlay } from './Icons';
@@ -5,9 +6,10 @@ import { MoreVertical, Radio, Cast, Camera, MonitorPlay } from './Icons';
 interface LiveGridProps {
   videos: Video[];
   onOpenCreate?: () => void;
+  onSelectVideo?: (video: Video) => void;
 }
 
-export const LiveGrid: React.FC<LiveGridProps> = ({ videos, onOpenCreate }) => {
+export const LiveGrid: React.FC<LiveGridProps> = ({ videos, onOpenCreate, onSelectVideo }) => {
   const [isBroadcasting, setIsBroadcasting] = useState(false);
 
   return (
@@ -56,7 +58,11 @@ export const LiveGrid: React.FC<LiveGridProps> = ({ videos, onOpenCreate }) => {
       
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {videos.map((video) => (
-          <div key={video.id} className="group cursor-pointer">
+          <div 
+            key={video.id} 
+            className="group cursor-pointer"
+            onClick={() => onSelectVideo?.(video)}
+          >
             <div className="relative aspect-video bg-dark-800 rounded-xl overflow-hidden mb-3 ring-2 ring-transparent group-hover:ring-brand-600 transition-all">
               <video 
                 src={video.url}
