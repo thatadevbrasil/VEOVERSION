@@ -1,6 +1,7 @@
+
 import React, { useState, useMemo } from 'react';
 import { Video, VideoFormat } from '../types';
-import { Play, MoreVertical, Search, Filter, Calendar, User, Film, MonitorPlay } from './Icons';
+import { Play, MoreVertical, Search, Filter, Calendar, User, Film, MonitorPlay, Image as ImageIcon } from './Icons';
 
 interface HomeGridProps {
   videos: Video[];
@@ -14,31 +15,24 @@ export const HomeGrid: React.FC<HomeGridProps> = ({ videos }) => {
   const [authorFilter, setAuthorFilter] = useState('all');
   const [dateFilter, setDateFilter] = useState<DateFilter>('all');
   const [formatFilter, setFormatFilter] = useState<FormatFilter>('all');
+  const [hoveringId, setHoveringId] = useState<string | null>(null);
 
-  // Get unique authors for the filter dropdown
   const authors = useMemo(() => {
     const uniqueAuthors = Array.from(new Set(videos.map(v => v.author)));
     return uniqueAuthors.sort();
   }, [videos]);
 
-  // Filtering logic
   const filteredVideos = useMemo(() => {
     return videos.filter(video => {
-      // Search query (matches prompt or author)
       const matchesSearch = 
         video.prompt.toLowerCase().includes(searchQuery.toLowerCase()) ||
         video.author.toLowerCase().includes(searchQuery.toLowerCase());
-      
-      // Author filter
       const matchesAuthor = authorFilter === 'all' || video.author === authorFilter;
-      
-      // Format filter
       const matchesFormat = 
         formatFilter === 'all' || 
         (formatFilter === 'landscape' && video.format === VideoFormat.Landscape) ||
         (formatFilter === 'short' && video.format === VideoFormat.Short);
       
-      // Date filter
       const now = Date.now();
       const oneDay = 24 * 60 * 60 * 1000;
       let matchesDate = true;
@@ -59,7 +53,6 @@ export const HomeGrid: React.FC<HomeGridProps> = ({ videos }) => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <h2 className="text-2xl font-bold">Explorar</h2>
         
-        {/* Search Bar */}
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
           <input
@@ -72,14 +65,12 @@ export const HomeGrid: React.FC<HomeGridProps> = ({ videos }) => {
         </div>
       </div>
 
-      {/* Filters Bar */}
       <div className="flex flex-wrap items-center gap-3 mb-8 pb-4 border-b border-dark-800">
         <div className="flex items-center gap-2 text-gray-400 text-sm mr-2">
           <Filter size={16} />
           <span>Filtros:</span>
         </div>
 
-        {/* Author Dropdown */}
         <div className="relative group">
           <select
             value={authorFilter}
@@ -94,7 +85,6 @@ export const HomeGrid: React.FC<HomeGridProps> = ({ videos }) => {
           <User className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" size={14} />
         </div>
 
-        {/* Date Dropdown */}
         <div className="relative group">
           <select
             value={dateFilter}
@@ -109,7 +99,6 @@ export const HomeGrid: React.FC<HomeGridProps> = ({ videos }) => {
           <Calendar className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" size={14} />
         </div>
 
-        {/* Format Dropdown */}
         <div className="relative group">
           <select
             value={formatFilter}
@@ -123,7 +112,6 @@ export const HomeGrid: React.FC<HomeGridProps> = ({ videos }) => {
           <MonitorPlay className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" size={14} />
         </div>
 
-        {/* Results count */}
         <div className="ml-auto text-xs text-gray-500 font-medium">
           {filteredVideos.length} resultados encontrados
         </div>
@@ -148,19 +136,29 @@ export const HomeGrid: React.FC<HomeGridProps> = ({ videos }) => {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredVideos.map((video) => (
-            <div key={video.id} className="group cursor-pointer">
-              {/* Thumbnail / Video Preview */}
+            <div 
+              key={video.id} 
+              className="group cursor-pointer"
+              onMouseEnter={() => setHoveringId(video.id)}
+              onMouseLeave={() => setHoveringId(null)}
+            >
               <div className="relative aspect-video bg-dark-800 rounded-xl overflow-hidden mb-3">
-                <video 
-                  src={video.url}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  muted
-                  onMouseOver={e => e.currentTarget.play().catch(() => {})}
-                  onMouseOut={e => {
-                    e.currentTarget.pause();
-                    e.currentTarget.currentTime = 0;
-                  }}
-                />
+                {video.thumbnailUrl && hoveringId !== video.id ? (
+                  <img 
+                    src={video.thumbnailUrl} 
+                    alt={video.prompt} 
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                ) : (
+                  <video 
+                    src={video.url}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    muted
+                    loop
+                    autoPlay={hoveringId === video.id}
+                  />
+                )}
+                
                 <div className="absolute bottom-2 right-2 bg-black/80 text-xs px-1.5 py-0.5 rounded text-white font-medium">
                   {video.format === VideoFormat.Short ? 'SHORTS' : '00:06'}
                 </div>
@@ -172,7 +170,6 @@ export const HomeGrid: React.FC<HomeGridProps> = ({ videos }) => {
                 )}
               </div>
               
-              {/* Meta Data */}
               <div className="flex gap-3">
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-500 to-indigo-500 flex-shrink-0 flex items-center justify-center text-sm font-bold shadow-inner">
                   {video.author[0]}

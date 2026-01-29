@@ -170,17 +170,12 @@ export const ShortsFeed: React.FC<ShortsFeedProps> = ({ videos }) => {
     }
   };
 
-  useEffect(() => {
-    // Garante que o container de shorts receba o foco para navegação por teclado
-    containerRef.current?.focus();
-  }, []);
-
   if (shortVideos.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-screen md:ml-64 text-gray-500 bg-dark-900">
         <Film size={64} className="mb-4 opacity-20" />
         <p className="text-xl font-bold">Nenhum Short disponível</p>
-        <p className="text-sm mt-2">Clique no botão central "+" para carregar um!</p>
+        <p className="text-sm mt-2">Crie o seu primeiro vídeo vertical!</p>
       </div>
     );
   }
@@ -189,7 +184,6 @@ export const ShortsFeed: React.FC<ShortsFeedProps> = ({ videos }) => {
     <div 
       ref={containerRef}
       onScroll={handleScroll}
-      tabIndex={0}
       className="h-screen overflow-y-scroll snap-y snap-mandatory shorts-container bg-black md:ml-64 outline-none"
     >
       {shortVideos.map((video, index) => (

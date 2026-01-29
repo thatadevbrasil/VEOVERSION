@@ -10,13 +10,13 @@ import { AuthModal } from './components/AuthModal';
 import { UploadView } from './components/UploadView';
 import { ChannelProfile } from './components/ChannelProfile';
 import { Video, Tab, VideoFormat, GenerationStatus, User, AffiliateLink } from './types';
-import { Menu, Youtube, User as UserIcon } from './components/Icons';
+import { Youtube, User as UserIcon } from './components/Icons';
 
-// Placeholder data for initial load
 const INITIAL_VIDEOS: Video[] = [
   {
     id: '1',
     url: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=2070&auto=format&fit=crop',
     prompt: 'Uma viagem cinematográfica pelas montanhas',
     description: 'Explore as paisagens mais incríveis das montanhas rochosas neste vídeo 4K.',
     format: VideoFormat.Landscape,
@@ -29,6 +29,7 @@ const INITIAL_VIDEOS: Video[] = [
   {
     id: '2',
     url: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1542435503-956c469947f6?q=80&w=1974&auto=format&fit=crop',
     prompt: 'Cena de ação rápida com efeitos especiais',
     description: 'Bastidores de como criamos esses efeitos especiais usando apenas IA.',
     affiliateLink: {
@@ -47,10 +48,6 @@ const INITIAL_VIDEOS: Video[] = [
     url: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
     prompt: 'Animação surreal de sonhos',
     description: 'Já sonhou com elefantes voadores? Essa animação foi gerada inteiramente a partir de um sonho que tive.',
-    affiliateLink: {
-        url: 'https://example.com/livro-sonhos',
-        label: 'Livro dos Sonhos - 30% OFF'
-    },
     format: VideoFormat.Short,
     status: GenerationStatus.Completed,
     createdAt: Date.now() - 50000,
@@ -69,7 +66,6 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Handle responsiveness
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
@@ -87,10 +83,11 @@ export default function App() {
     setActiveTab('home');
   };
 
-  const handleVideoCreated = (url: string, prompt: string, format: VideoFormat, description: string, affiliateLink?: AffiliateLink, isLocal = false) => {
+  const handleVideoCreated = (url: string, prompt: string, format: VideoFormat, description: string, affiliateLink?: AffiliateLink, thumbnailUrl?: string) => {
     const newVideo: Video = {
       id: Date.now().toString(),
       url,
+      thumbnailUrl,
       prompt,
       description,
       affiliateLink,
@@ -101,13 +98,11 @@ export default function App() {
       views: '0',
       author: currentUser ? currentUser.name : 'Você',
       authorId: currentUser?.id,
-      authorAvatar: currentUser?.avatar,
-      isLocal
+      authorAvatar: currentUser?.avatar
     };
     
     setVideos(prev => [newVideo, ...prev]);
     
-    // Switch to appropriate tab
     if (format === VideoFormat.Short) {
       setActiveTab('shorts');
     } else {
@@ -122,32 +117,23 @@ export default function App() {
       case 'videos':
         return <HomeGrid videos={videos.filter(v => v.format === VideoFormat.Landscape)} />;
       case 'upload':
-        return <UploadView onCancel={() => setActiveTab('home')} onUploadSuccess={(url, title, format, desc, link) => handleVideoCreated(url, title, format, desc, link, true)} />;
+        return <UploadView onCancel={() => setActiveTab('home')} onUploadSuccess={handleVideoCreated} />;
       case 'tv':
         return <TVMode videos={videos} />;
       case 'live':
         return <LiveGrid videos={videos} onOpenCreate={() => setIsCreateModalOpen(true)} />;
       case 'home':
-        return <HomeGrid videos={videos} />;
+      case 'library':
       case 'my_videos':
       case 'channel':
-        if (!currentUser) {
-            if (activeTab === 'my_videos') {
-               setTimeout(() => setIsAuthModalOpen(true), 0);
-               setActiveTab('home');
-               return <HomeGrid videos={videos} />;
-            }
+        if ((activeTab === 'channel' || activeTab === 'my_videos') && !currentUser) {
+            setTimeout(() => setIsAuthModalOpen(true), 0);
+            setActiveTab('home');
             return <HomeGrid videos={videos} />;
         }
-        return (
-            <ChannelProfile 
-                user={currentUser} 
-                videos={videos} 
-                onUpdateUser={setCurrentUser}
-                onOpenCreate={() => setIsCreateModalOpen(true)}
-            />
-        );
-      case 'library':
+        if (currentUser && activeTab === 'channel') {
+           return <ChannelProfile user={currentUser} videos={videos} onUpdateUser={setCurrentUser} onOpenCreate={() => setIsCreateModalOpen(true)} />;
+        }
         return <HomeGrid videos={videos} />;
       default:
         return <HomeGrid videos={videos} />;
@@ -158,11 +144,11 @@ export default function App() {
     return <SplashScreen onFinish={() => setLoading(false)} />;
   }
 
-  // Define if we should have padding bottom (hide for shorts on mobile)
-  const showBottomNavPadding = activeTab !== 'shorts';
+  // Importante: Remover padding inferior para Shorts para o snap scroll funcionar
+  const isShortsActive = activeTab === 'shorts';
 
   return (
-    <div className={`min-h-screen bg-dark-900 text-white font-sans selection:bg-brand-500 selection:text-white ${showBottomNavPadding ? 'pb-20 md:pb-0' : 'pb-0'}`}>
+    <div className={`min-h-screen bg-dark-900 text-white font-sans ${!isShortsActive ? 'pb-20 md:pb-0' : ''}`}>
       <Sidebar 
         activeTab={activeTab} 
         setActiveTab={setActiveTab} 
@@ -173,8 +159,7 @@ export default function App() {
         onLogout={handleLogout}
       />
 
-      {/* Mobile Header */}
-      {isMobile && activeTab !== 'shorts' && activeTab !== 'upload' && (
+      {isMobile && !isShortsActive && activeTab !== 'upload' && (
         <div className="fixed top-0 left-0 right-0 h-16 bg-dark-900/80 backdrop-blur-md z-40 flex items-center justify-between px-4 border-b border-dark-700">
            <div className="flex items-center gap-2">
              <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center font-bold text-white">

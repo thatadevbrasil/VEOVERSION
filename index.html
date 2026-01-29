@@ -14,10 +14,10 @@
               brand: {
                 50: '#faf5ff',
                 100: '#f3e8ff',
-                500: '#a855f7', // Purple 500
-                600: '#9333ea', // Purple 600
-                700: '#7e22ce', // Purple 700
-                900: '#581c87', // Purple 900
+                500: '#a855f7', 
+                600: '#9333ea', 
+                700: '#7e22ce', 
+                900: '#581c87', 
               },
               dark: {
                 900: '#09090b',
@@ -35,29 +35,34 @@
       }
     </script>
     <style>
-      /* Estilização da barra de rolagem (Barra lateral para deslizar) */
+      /* Barra de rolagem customizada e visível */
       ::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
+        width: 10px;
+        height: 10px;
       }
       ::-webkit-scrollbar-track {
         background: #09090b;
       }
       ::-webkit-scrollbar-thumb {
         background: #27272a;
-        border-radius: 10px;
+        border-radius: 5px;
+        border: 2px solid #09090b;
       }
       ::-webkit-scrollbar-thumb:hover {
         background: #a855f7;
       }
       
-      /* Mantém o comportamento de snap para shorts mas permite scroll visível se necessário */
+      /* Ocultar barra nos shorts para manter foco no conteúdo, mas permitir rolagem */
       .shorts-container {
-        scrollbar-width: none; /* Firefox */
-        -ms-overflow-style: none;  /* IE/Edge */
+        scrollbar-width: none;
+        -ms-overflow-style: none;
       }
       .shorts-container::-webkit-scrollbar {
-        display: none; /* Chrome/Safari */
+        display: none;
+      }
+
+      body {
+        overflow-x: hidden;
       }
     </style>
   <script type="importmap">

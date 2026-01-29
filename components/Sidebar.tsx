@@ -25,7 +25,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'home', label: 'Início', icon: Home },
     { id: 'shorts', label: 'Shorts', icon: Film },
     { id: 'videos', label: 'Vídeos', icon: MonitorPlay },
-    { id: 'upload', label: 'Criar', icon: PlusIcon },
+    { id: 'upload', label: 'Upload', icon: PlusIcon },
     { id: 'tv', label: 'TV', icon: Tv },
     { id: 'live', label: 'Ao Vivo', icon: Radio },
   ];
@@ -65,7 +65,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </div>
 
-      {/* Navegação com scroll interno (Barra lateral para deslizar) */}
       <nav className="flex-1 px-4 space-y-2 overflow-y-auto custom-sidebar-scroll pb-4">
         {navItems.map((item) => (
           <button
@@ -127,7 +126,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             className="w-full flex items-center justify-center gap-2 bg-brand-600 hover:bg-brand-700 text-white py-3 rounded-xl font-semibold transition-all shadow-lg shadow-brand-900/20"
          >
             <PlusSquare size={20} />
-            <span>IA Generativa</span>
+            <span>Criar Vídeo</span>
          </button>
 
          {currentUser && (

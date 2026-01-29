@@ -1,3 +1,4 @@
+
 export enum VideoFormat {
   Short = '9:16',
   Landscape = '16:9'
@@ -27,6 +28,7 @@ export interface AffiliateLink {
 export interface Video {
   id: string;
   url: string;
+  thumbnailUrl?: string; // Novo campo para a capa do vídeo
   prompt: string;
   description?: string;
   affiliateLink?: AffiliateLink;
