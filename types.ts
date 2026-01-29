@@ -20,6 +20,13 @@ export interface User {
   subscribers: string;
 }
 
+export interface PairedDevice {
+  id: string;
+  name: string;
+  lastConnected: number;
+  code: string;
+}
+
 export interface AffiliateLink {
   url: string;
   label: string;

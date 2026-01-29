@@ -14,8 +14,9 @@ import { VideoPlayer } from './components/VideoPlayer';
 import { CoursesView } from './components/CoursesView';
 import { PodcastView } from './components/PodcastView';
 import { ExploreView } from './components/ExploreView';
+import { TVConnectModal } from './components/TVConnectModal';
 import { Video, Tab, VideoFormat, GenerationStatus, User, AffiliateLink } from './types';
-import { Youtube, User as UserIcon } from './components/Icons';
+import { Youtube, User as UserIcon, Cast } from './components/Icons';
 
 const INITIAL_VIDEOS: Video[] = [
   {
@@ -71,17 +72,43 @@ export default function App() {
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
   const [viewedChannelName, setViewedChannelName] = useState<string | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isTVConnectOpen, setIsTVConnectOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    const savedVideos = localStorage.getItem('veotube_videos');
+    const savedUser = localStorage.getItem('veotube_current_user');
+    
+    if (savedVideos) {
+      setVideos(JSON.parse(savedVideos));
+    }
+    
+    if (savedUser) {
+      setCurrentUser(JSON.parse(savedUser));
+    }
+
+    const checkMobile = () => setIsMobile(window.innerWidth < 1024);
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  useEffect(() => {
+    if (videos !== INITIAL_VIDEOS) {
+      localStorage.setItem('veotube_videos', JSON.stringify(videos));
+    }
+  }, [videos]);
+
+  useEffect(() => {
+    if (currentUser) {
+      localStorage.setItem('veotube_current_user', JSON.stringify(currentUser));
+    } else {
+      localStorage.removeItem('veotube_current_user');
+    }
+  }, [currentUser]);
 
   const handleLogin = (user: User) => {
     setCurrentUser(user);
@@ -90,6 +117,7 @@ export default function App() {
 
   const handleLogout = () => {
     setCurrentUser(null);
+    localStorage.removeItem('veotube_current_user');
     setActiveTab('home');
   };
 
@@ -145,6 +173,8 @@ export default function App() {
         return <CoursesView />;
       case 'podcasts':
         return <PodcastView />;
+      case 'tv':
+        return <TVMode videos={videos} />;
       case 'channel':
         if (!currentUser) {
           setTimeout(() => setIsAuthModalOpen(true), 0);
@@ -197,11 +227,12 @@ export default function App() {
   const isShortsActive = activeTab === 'shorts';
 
   return (
-    <div className={`min-h-screen bg-dark-900 text-white font-sans ${!isShortsActive ? 'pb-20 md:pb-0' : ''}`}>
+    <div className={`min-h-screen bg-dark-900 text-white font-sans ${!isShortsActive ? 'pb-20' : ''}`}>
       <Sidebar 
         activeTab={activeTab} 
         setActiveTab={setActiveTab} 
         onOpenCreate={() => setIsCreateModalOpen(true)}
+        onOpenTVConnect={() => setIsTVConnectOpen(true)}
         isMobile={isMobile}
         currentUser={currentUser}
         onLoginClick={() => setIsAuthModalOpen(true)}
@@ -214,21 +245,26 @@ export default function App() {
              <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center font-bold text-white">
                 <Youtube className="text-white fill-white" size={20} />
              </div>
-             <span className="font-bold text-lg tracking-tight">VeoTube</span>
+             <span className="font-black text-lg tracking-tighter uppercase italic">VeoTube</span>
            </div>
-           {currentUser ? (
-              <button onClick={() => setActiveTab('channel')} className="w-8 h-8 rounded-full overflow-hidden border border-brand-500">
-                <img src={currentUser.avatar} alt="Me" />
+           <div className="flex items-center gap-3">
+              <button onClick={() => setIsTVConnectOpen(true)} className="text-gray-400">
+                 <Cast size={22} />
               </button>
-           ) : (
-             <button className="p-2 text-brand-500" onClick={() => setIsAuthModalOpen(true)}>
-                <UserIcon size={24} />
-             </button>
-           )}
+              {currentUser ? (
+                <button onClick={() => setActiveTab('channel')} className="w-8 h-8 rounded-full overflow-hidden border border-brand-500">
+                  <img src={currentUser.avatar} alt="Me" className="w-full h-full object-cover" />
+                </button>
+              ) : (
+                <button className="p-2 text-brand-500" onClick={() => setIsAuthModalOpen(true)}>
+                    <UserIcon size={24} />
+                </button>
+              )}
+           </div>
         </div>
       )}
 
-      <main className="min-h-screen">
+      <main className={`min-h-screen ${!isMobile ? 'lg:ml-0' : ''}`}>
         {renderContent()}
       </main>
 
@@ -236,6 +272,11 @@ export default function App() {
         isOpen={isCreateModalOpen} 
         onClose={() => setIsCreateModalOpen(false)}
         onSuccess={handleVideoCreated}
+      />
+
+      <TVConnectModal
+        isOpen={isTVConnectOpen}
+        onClose={() => setIsTVConnectOpen(false)}
       />
 
       <AuthModal 

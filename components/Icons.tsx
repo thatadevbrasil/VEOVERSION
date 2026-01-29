@@ -42,7 +42,14 @@ import {
   Music,
   Gamepad2,
   Newspaper,
-  Trophy
+  Trophy,
+  Settings,
+  Smartphone,
+  History,
+  Trash2,
+  ChevronUp,
+  ChevronDown,
+  LayoutGrid
 } from 'lucide-react';
 
 export { 
@@ -87,5 +94,12 @@ export {
   Music,
   Gamepad2,
   Newspaper,
-  Trophy
+  Trophy,
+  Settings,
+  Smartphone,
+  History,
+  Trash2,
+  ChevronUp,
+  ChevronDown,
+  LayoutGrid
 };
