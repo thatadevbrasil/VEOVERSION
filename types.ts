@@ -38,6 +38,7 @@ export interface Video {
   author: string;
   authorId?: string;
   authorAvatar?: string;
+  isLocal?: boolean;
 }
 
-export type Tab = 'home' | 'shorts' | 'videos' | 'live' | 'tv' | 'library' | 'channel' | 'my_videos';
+export type Tab = 'home' | 'shorts' | 'videos' | 'live' | 'tv' | 'library' | 'channel' | 'my_videos' | 'upload';

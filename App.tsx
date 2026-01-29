@@ -7,9 +7,10 @@ import { TVMode } from './components/TVMode';
 import { SplashScreen } from './components/SplashScreen';
 import { CreateModal } from './components/CreateModal';
 import { AuthModal } from './components/AuthModal';
+import { UploadView } from './components/UploadView';
 import { ChannelProfile } from './components/ChannelProfile';
 import { Video, Tab, VideoFormat, GenerationStatus, User, AffiliateLink } from './types';
-import { Menu, Youtube } from './components/Icons';
+import { Menu, Youtube, User as UserIcon } from './components/Icons';
 
 // Placeholder data for initial load
 const INITIAL_VIDEOS: Video[] = [
@@ -41,18 +42,6 @@ const INITIAL_VIDEOS: Video[] = [
     views: '8.5K',
     author: 'ActionAI'
   },
-   {
-    id: '3',
-    url: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
-    prompt: 'Paisagem natural relaxante',
-    format: VideoFormat.Landscape,
-    status: GenerationStatus.Completed,
-    createdAt: Date.now() - 200000,
-    likes: 3400,
-    views: '45K',
-    author: 'NatureAI'
-  },
-  // Simulate a vertical video by using a standard one but labeling it Short (visual crop handles it in ShortsFeed)
   {
     id: '4',
     url: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
@@ -98,7 +87,7 @@ export default function App() {
     setActiveTab('home');
   };
 
-  const handleVideoCreated = (url: string, prompt: string, format: VideoFormat, description: string, affiliateLink?: AffiliateLink) => {
+  const handleVideoCreated = (url: string, prompt: string, format: VideoFormat, description: string, affiliateLink?: AffiliateLink, isLocal = false) => {
     const newVideo: Video = {
       id: Date.now().toString(),
       url,
@@ -112,7 +101,8 @@ export default function App() {
       views: '0',
       author: currentUser ? currentUser.name : 'Você',
       authorId: currentUser?.id,
-      authorAvatar: currentUser?.avatar
+      authorAvatar: currentUser?.avatar,
+      isLocal
     };
     
     setVideos(prev => [newVideo, ...prev]);
@@ -121,7 +111,7 @@ export default function App() {
     if (format === VideoFormat.Short) {
       setActiveTab('shorts');
     } else {
-      setActiveTab('channel'); // Go to channel if user is logged in and made a video
+      setActiveTab('home'); 
     }
   };
 
@@ -131,17 +121,18 @@ export default function App() {
         return <ShortsFeed videos={videos} />;
       case 'videos':
         return <HomeGrid videos={videos.filter(v => v.format === VideoFormat.Landscape)} />;
+      case 'upload':
+        return <UploadView onCancel={() => setActiveTab('home')} onUploadSuccess={(url, title, format, desc, link) => handleVideoCreated(url, title, format, desc, link, true)} />;
       case 'tv':
         return <TVMode videos={videos} />;
       case 'live':
-        return <LiveGrid videos={videos} />;
+        return <LiveGrid videos={videos} onOpenCreate={() => setIsCreateModalOpen(true)} />;
       case 'home':
         return <HomeGrid videos={videos} />;
       case 'my_videos':
       case 'channel':
         if (!currentUser) {
             if (activeTab === 'my_videos') {
-               // Force auth modal if accessing my_videos without login
                setTimeout(() => setIsAuthModalOpen(true), 0);
                setActiveTab('home');
                return <HomeGrid videos={videos} />;
@@ -167,8 +158,11 @@ export default function App() {
     return <SplashScreen onFinish={() => setLoading(false)} />;
   }
 
+  // Define if we should have padding bottom (hide for shorts on mobile)
+  const showBottomNavPadding = activeTab !== 'shorts';
+
   return (
-    <div className="min-h-screen bg-dark-900 text-white font-sans selection:bg-brand-500 selection:text-white">
+    <div className={`min-h-screen bg-dark-900 text-white font-sans selection:bg-brand-500 selection:text-white ${showBottomNavPadding ? 'pb-20 md:pb-0' : 'pb-0'}`}>
       <Sidebar 
         activeTab={activeTab} 
         setActiveTab={setActiveTab} 
@@ -180,21 +174,21 @@ export default function App() {
       />
 
       {/* Mobile Header */}
-      {isMobile && activeTab !== 'shorts' && (
+      {isMobile && activeTab !== 'shorts' && activeTab !== 'upload' && (
         <div className="fixed top-0 left-0 right-0 h-16 bg-dark-900/80 backdrop-blur-md z-40 flex items-center justify-between px-4 border-b border-dark-700">
            <div className="flex items-center gap-2">
              <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center font-bold text-white">
                 <Youtube className="text-white fill-white" size={20} />
              </div>
-             <span className="font-bold text-lg">VeoTube</span>
+             <span className="font-bold text-lg tracking-tight">VeoTube</span>
            </div>
            {currentUser ? (
-              <button onClick={() => setActiveTab('channel')} className="w-8 h-8 rounded-full overflow-hidden">
+              <button onClick={() => setActiveTab('channel')} className="w-8 h-8 rounded-full overflow-hidden border border-brand-500">
                 <img src={currentUser.avatar} alt="Me" />
               </button>
            ) : (
-             <button className="p-2" onClick={() => setIsAuthModalOpen(true)}>
-                <Menu size={24} />
+             <button className="p-2 text-brand-500" onClick={() => setIsAuthModalOpen(true)}>
+                <UserIcon size={24} />
              </button>
            )}
         </div>

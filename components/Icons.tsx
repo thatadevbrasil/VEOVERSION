@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { 
   Home, 
@@ -29,7 +30,9 @@ import {
   Tv,
   Cast,
   Filter,
-  Calendar
+  Calendar,
+  // Added CheckCircle icon
+  CheckCircle
 } from 'lucide-react';
 
 export { 
@@ -41,26 +44,28 @@ export {
   Heart, 
   MessageCircle, 
   Share2, 
-  MoreVertical,
-  Play,
-  Loader2,
-  Menu,
-  X,
-  Maximize2,
-  MonitorPlay,
-  Radio,
-  Camera,
-  Edit3,
-  LogOut,
-  User,
-  Mail,
-  Image,
-  UploadCloud,
-  Clapperboard,
-  Youtube,
-  Link,
-  Tv,
-  Cast,
-  Filter,
-  Calendar
+  MoreVertical, 
+  Play, 
+  Loader2, 
+  Menu, 
+  X, 
+  Maximize2, 
+  MonitorPlay, 
+  Radio, 
+  Camera, 
+  Edit3, 
+  LogOut, 
+  User, 
+  Mail, 
+  Image, 
+  UploadCloud, 
+  Clapperboard, 
+  Youtube, 
+  Link, 
+  Tv, 
+  Cast, 
+  Filter, 
+  Calendar,
+  // Added CheckCircle to exports
+  CheckCircle
 };

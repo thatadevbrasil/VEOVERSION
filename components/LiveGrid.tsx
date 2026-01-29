@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { Video } from '../types';
-import { MoreVertical, Radio, Cast, Camera } from './Icons';
+import { MoreVertical, Radio, Cast, Camera, MonitorPlay } from './Icons';
 
 interface LiveGridProps {
   videos: Video[];
+  onOpenCreate?: () => void;
 }
 
-export const LiveGrid: React.FC<LiveGridProps> = ({ videos }) => {
+export const LiveGrid: React.FC<LiveGridProps> = ({ videos, onOpenCreate }) => {
   const [isBroadcasting, setIsBroadcasting] = useState(false);
 
   return (
@@ -19,13 +20,23 @@ export const LiveGrid: React.FC<LiveGridProps> = ({ videos }) => {
             <h2 className="text-2xl font-bold">Ao Vivo Agora</h2>
           </div>
           
-          <button 
-            onClick={() => setIsBroadcasting(!isBroadcasting)}
-            className="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-full font-bold transition-colors shadow-lg"
-          >
-            {isBroadcasting ? <Radio size={18} /> : <Cast size={18} />}
-            {isBroadcasting ? 'Encerrar Transmissão' : 'Iniciar Transmissão'}
-          </button>
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={onOpenCreate}
+              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-full font-bold transition-colors shadow-lg"
+            >
+              <MonitorPlay size={18} />
+              <span>Vídeo Longo</span>
+            </button>
+
+            <button 
+              onClick={() => setIsBroadcasting(!isBroadcasting)}
+              className="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-full font-bold transition-colors shadow-lg"
+            >
+              {isBroadcasting ? <Radio size={18} /> : <Cast size={18} />}
+              {isBroadcasting ? 'Encerrar Transmissão' : 'Iniciar Transmissão'}
+            </button>
+          </div>
       </div>
 
       {isBroadcasting && (

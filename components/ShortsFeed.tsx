@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Video, VideoFormat } from '../types';
-import { Heart, MessageCircle, Share2, MoreVertical, Play, Film, Maximize2, Link } from './Icons';
+import { Heart, MessageCircle, Share2, Maximize2, Link, Play, Film } from './Icons';
 
 interface ShortsFeedProps {
   videos: Video[];
@@ -27,7 +27,8 @@ const ShortItem: React.FC<{ video: Video; isActive: boolean }> = ({ video, isAct
     }
   }, [isActive]);
 
-  const togglePlay = () => {
+  const togglePlay = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (videoRef.current) {
       if (isPlaying) {
         videoRef.current.pause();
@@ -38,10 +39,11 @@ const ShortItem: React.FC<{ video: Video; isActive: boolean }> = ({ video, isAct
     }
   };
 
-  const toggleFullScreen = () => {
+  const toggleFullScreen = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (!document.fullscreenElement && containerRef.current) {
       containerRef.current.requestFullscreen().catch((err) => {
-        console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+        console.error(`Erro ao tentar modo tela cheia: ${err.message}`);
       });
     } else if (document.fullscreenElement) {
       document.exitFullscreen();
@@ -51,32 +53,30 @@ const ShortItem: React.FC<{ video: Video; isActive: boolean }> = ({ video, isAct
   return (
     <div 
       ref={containerRef}
-      className="relative w-full h-[calc(100vh-64px)] md:h-screen snap-start flex justify-center bg-black"
+      className="relative w-full h-screen snap-start flex justify-center bg-black overflow-hidden"
     >
-      {/* Video Container */}
-      <div className="relative h-full aspect-[9/16] max-w-md bg-dark-800">
+      <div className="relative h-full aspect-[9/16] bg-dark-800 shadow-2xl overflow-hidden">
         <video
           ref={videoRef}
           src={video.url}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover cursor-pointer"
           loop
           playsInline
           onClick={togglePlay}
         />
         
-        {/* Play Pause Overlay */}
         {!isPlaying && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none bg-black/20">
-            <Play size={48} className="text-white/80 fill-white/80" />
+            <div className="p-6 rounded-full bg-black/40 backdrop-blur-sm">
+                <Play size={48} className="text-white fill-white ml-1" />
+            </div>
           </div>
         )}
 
-        {/* Info Overlay */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/90 via-black/60 to-transparent pt-32">
-          <div className="flex justify-between items-end">
+        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/95 via-black/40 to-transparent pt-32 pointer-events-none">
+          <div className="flex justify-between items-end pointer-events-auto">
             <div className="flex-1 mr-4">
               
-              {/* Affiliate Link */}
               {video.affiliateLink && (
                   <a 
                     href={video.affiliateLink.url} 
@@ -90,63 +90,61 @@ const ShortItem: React.FC<{ video: Video; isActive: boolean }> = ({ video, isAct
               )}
 
               <div className="flex items-center gap-2 mb-2">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-brand-500 to-orange-500 flex items-center justify-center text-sm font-bold border-2 border-white/20">
+                <div className="w-10 h-10 rounded-full bg-brand-600 flex items-center justify-center text-sm font-bold border-2 border-white/20">
                   {video.author[0]}
                 </div>
-                <span className="font-bold text-white shadow-black drop-shadow-md">@{video.author}</span>
-                <button className="bg-white text-black text-xs font-bold px-3 py-1 rounded-full hover:bg-gray-200 transition-colors">
-                    Inscrever-se
+                <span className="font-bold text-white drop-shadow-lg">@{video.author}</span>
+                <button className="bg-white text-black text-xs font-bold px-3 py-1 rounded-full hover:bg-gray-200 transition-colors ml-1">
+                    Seguir
                 </button>
               </div>
 
-              {/* Description Section */}
               <div className="text-gray-200 mb-2">
-                <p className={`text-sm ${showFullDesc ? '' : 'line-clamp-2'} drop-shadow-md`}>
+                <p className={`text-sm ${showFullDesc ? '' : 'line-clamp-2'} drop-shadow-md leading-snug`}>
                     <span className="font-semibold text-white mr-2">{video.prompt}</span>
                     {video.description}
                 </p>
                 {(video.description && video.description.length > 50) && (
                     <button 
-                        onClick={() => setShowFullDesc(!showFullDesc)}
+                        onClick={(e) => { e.stopPropagation(); setShowFullDesc(!showFullDesc); }}
                         className="text-xs text-gray-400 hover:text-white mt-1 font-semibold"
                     >
-                        {showFullDesc ? 'Mostrar menos' : 'mais...'}
+                        {showFullDesc ? 'Ver menos' : 'mais...'}
                     </button>
                 )}
               </div>
             </div>
             
-            {/* Action Buttons */}
-            <div className="flex flex-col gap-4 items-center">
+            <div className="flex flex-col gap-5 items-center pb-2">
               <button className="flex flex-col items-center gap-1 group">
-                <div className="p-3 bg-dark-800/60 backdrop-blur-md rounded-full group-hover:bg-dark-700/80 transition-colors border border-white/10">
-                  <Heart size={26} className="group-hover:text-red-500 transition-colors" />
+                <div className="p-3 bg-dark-800/60 backdrop-blur-md rounded-full group-hover:bg-brand-500/20 transition-colors border border-white/10">
+                  <Heart size={28} className="group-hover:text-red-500 transition-colors fill-transparent group-hover:fill-red-500" />
                 </div>
-                <span className="text-xs font-medium shadow-black drop-shadow-md">{video.likes}</span>
+                <span className="text-xs font-bold drop-shadow-lg">{video.likes}</span>
               </button>
               
               <button className="flex flex-col items-center gap-1 group">
-                <div className="p-3 bg-dark-800/60 backdrop-blur-md rounded-full group-hover:bg-dark-700/80 transition-colors border border-white/10">
-                  <MessageCircle size={26} />
+                <div className="p-3 bg-dark-800/60 backdrop-blur-md rounded-full group-hover:bg-brand-500/20 transition-colors border border-white/10">
+                  <MessageCircle size={28} />
                 </div>
-                <span className="text-xs font-medium shadow-black drop-shadow-md">124</span>
+                <span className="text-xs font-bold drop-shadow-lg">124</span>
               </button>
 
               <button 
                 onClick={toggleFullScreen}
                 className="flex flex-col items-center gap-1 group"
               >
-                 <div className="p-3 bg-dark-800/60 backdrop-blur-md rounded-full group-hover:bg-dark-700/80 transition-colors border border-white/10">
-                  <Maximize2 size={26} />
+                 <div className="p-3 bg-dark-800/60 backdrop-blur-md rounded-full group-hover:bg-brand-500/20 transition-colors border border-white/10">
+                  <Maximize2 size={28} />
                  </div>
-                 <span className="text-xs font-medium shadow-black drop-shadow-md">Tela cheia</span>
+                 <span className="text-xs font-bold drop-shadow-lg">Tela Cheia</span>
               </button>
 
               <button className="flex flex-col items-center gap-1 group">
-                 <div className="p-3 bg-dark-800/60 backdrop-blur-md rounded-full group-hover:bg-dark-700/80 transition-colors border border-white/10">
-                  <Share2 size={26} />
+                 <div className="p-3 bg-dark-800/60 backdrop-blur-md rounded-full group-hover:bg-brand-500/20 transition-colors border border-white/10">
+                  <Share2 size={28} />
                  </div>
-                 <span className="text-xs font-medium shadow-black drop-shadow-md">Partilhar</span>
+                 <span className="text-xs font-bold drop-shadow-lg">Partilhar</span>
               </button>
             </div>
           </div>
@@ -160,22 +158,29 @@ export const ShortsFeed: React.FC<ShortsFeedProps> = ({ videos }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Filter only short videos
   const shortVideos = videos.filter(v => v.format === VideoFormat.Short);
 
   const handleScroll = () => {
     if (containerRef.current) {
       const { scrollTop, clientHeight } = containerRef.current;
       const index = Math.round(scrollTop / clientHeight);
-      setActiveIndex(index);
+      if (index !== activeIndex) {
+        setActiveIndex(index);
+      }
     }
   };
 
+  useEffect(() => {
+    // Garante que o container de shorts receba o foco para navegação por teclado
+    containerRef.current?.focus();
+  }, []);
+
   if (shortVideos.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen text-gray-500">
-        <Film size={48} className="mb-4 opacity-50" />
-        <p>Nenhum Short encontrado. Crie um!</p>
+      <div className="flex flex-col items-center justify-center h-screen md:ml-64 text-gray-500 bg-dark-900">
+        <Film size={64} className="mb-4 opacity-20" />
+        <p className="text-xl font-bold">Nenhum Short disponível</p>
+        <p className="text-sm mt-2">Clique no botão central "+" para carregar um!</p>
       </div>
     );
   }
@@ -184,7 +189,8 @@ export const ShortsFeed: React.FC<ShortsFeedProps> = ({ videos }) => {
     <div 
       ref={containerRef}
       onScroll={handleScroll}
-      className="h-screen overflow-y-scroll snap-y snap-mandatory no-scrollbar bg-black"
+      tabIndex={0}
+      className="h-screen overflow-y-scroll snap-y snap-mandatory shorts-container bg-black md:ml-64 outline-none"
     >
       {shortVideos.map((video, index) => (
         <ShortItem 
